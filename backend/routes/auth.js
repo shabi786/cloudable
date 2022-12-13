@@ -5,8 +5,9 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const JWT_TOKEN = "randomauthtoken"
+const fetchuser = require('../middleware/fetchuser') 
 
-//Endpoint to create a new user
+//Route 3-Endpoint to create a new user
 router.post('/createuser', [
     body('name', 'Enter a valid name').isLength({ min: 3 }),
     body('email', 'Enter a valid email').isEmail(),
@@ -47,7 +48,7 @@ router.post('/createuser', [
     }
 
 })
-//Endpoint to login user
+//Route 2-Endpoint to login user
 router.post('/login', [
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Password must be atleast 5 characters').exists()
@@ -79,6 +80,19 @@ router.post('/login', [
     }
     catch (error) {
         console.error(error.message);
+        req.status(500).send("Internal Server Error")
+    }
+})
+
+//Route 3-Endpoint for getting the details of the user
+router.post('/getuser',fetchuser, async (req, res) => {
+    try {
+        userId = req.user.id
+        //We can fetch the user by the id and send response without showing password
+        const user = await User.findById(userId).select("-password");
+        res.send(user);
+        
+    } catch (error) {
         req.status(500).send("Internal Server Error")
     }
 })
